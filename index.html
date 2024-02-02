@@ -1,11 +1,3 @@
-<!--
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp32-web-bluetooth/
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
--->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,9 +11,12 @@
   <button id="connectBleButton">Connect to BLE Device</button>
   <button id="disconnectBleButton">Disconnect BLE Device</button>
   <p>BLE state: <strong><span id="bleState" style="color:#d13a30;">Disconnected</span></strong></p>
-  <h2>Fetched Value</h2>
+  <h2>Read from DCUD</h2>
   <p><span id="valueContainer">NaN</span></p>
   <p>Last reading: <span id="timestamp"></span></p>
+  <h2>Write To DCUD</h2>
+  <input type="text" id="inputData" placeholder="Enter data">
+  <button id="sendDataButton">Send Data</button>
   <!-- <h2>Control GPIO 2</h2>
   <button id="onButton">ON</button>
   <button id="offButton">OFF</button>
@@ -33,8 +28,10 @@
     // DOM Elements
     const connectButton = document.getElementById('connectBleButton');
     const disconnectButton = document.getElementById('disconnectBleButton');
-    const onButton = document.getElementById('onButton');
-    const offButton = document.getElementById('offButton');
+    // const onButton = document.getElementById('onButton');
+    // const offButton = document.getElementById('offButton');
+    const inputDataField = document.getElementById('inputData');
+    const sendDataButton = document.getElementById('sendDataButton');
     const retrievedValue = document.getElementById('valueContainer');
     const latestValueSent = document.getElementById('valueSent');
     const bleStateContainer = document.getElementById('bleState');
@@ -64,6 +61,7 @@
     // Write to the ESP32 LED Characteristic
     // onButton.addEventListener('click', () => writeOnCharacteristic(1));
     // offButton.addEventListener('click', () => writeOnCharacteristic(0));
+    sendDataButton.addEventListener('click', () => writeOnCharacteristic(inputDataField.value));
 
     // Check if BLE is available in your Browser
     function isWebBluetoothEnabled() {
@@ -134,26 +132,26 @@
         timestampContainer.innerHTML = getDateTime();
     }
 
-    // function writeOnCharacteristic(value){
-    //     if (bleServer && bleServer.connected) {
-    //         bleServiceFound.getCharacteristic(ledCharacteristic)
-    //         .then(characteristic => {
-    //             console.log("Found the LED characteristic: ", characteristic.uuid);
-    //             const data = new Uint8Array([value]);
-    //             return characteristic.writeValue(data);
-    //         })
-    //         .then(() => {
-    //             latestValueSent.innerHTML = value;
-    //             console.log("Value written to LEDcharacteristic:", value);
-    //         })
-    //         .catch(error => {
-    //             console.error("Error writing to the LED characteristic: ", error);
-    //         });
-    //     } else {
-    //         console.error ("Bluetooth is not connected. Cannot write to characteristic.")
-    //         window.alert("Bluetooth is not connected. Cannot write to characteristic. \n Connect to BLE first!")
-    //     }
-    // }
+    function writeOnCharacteristic(value){
+        if (bleServer && bleServer.connected) {
+            bleServiceFound.getCharacteristic(sensorCharacteristic)
+            .then(characteristic => {
+                console.log("Found the LED characteristic: ", characteristic.uuid);
+                const data = new Uint8Array([value]);
+                return characteristic.writeValue(data);
+            })
+            .then(() => {
+                latestValueSent.innerHTML = value;
+                console.log("Value written to LEDcharacteristic:", value);
+            })
+            .catch(error => {
+                console.error("Error writing to the LED characteristic: ", error);
+            });
+        } else {
+            console.error ("Bluetooth is not connected. Cannot write to characteristic.")
+            window.alert("Bluetooth is not connected. Cannot write to characteristic. \n Connect to BLE first!")
+        }
+    }
 
     function disconnectDevice() {
         console.log("Disconnect Device.");
